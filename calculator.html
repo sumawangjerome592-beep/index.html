@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: sans-serif;
+      background: #f3f3f3;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .calculator {
+      width: 300px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .display {
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 12px 16px;
+      text-align: right;
+    }
+    #expr {
+      font-size: 12px;
+      color: #999;
+      min-height: 18px;
+      word-break: break-all;
+    }
+    #result {
+      font-size: 28px;
+      font-weight: 500;
+      color: #111;
+      margin-top: 2px;
+    }
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    button {
+      padding: 14px;
+      font-size: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #f2f2f2;
+      color: #111;
+      transition: background 0.1s;
+    }
+    button:hover { background: #e8e8e8; }
+    button:active { transform: scale(0.97); }
+    .btn-op  { background: #e8f0fe; color: #1a56b0; }
+    .btn-op:hover { background: #d2e3fc; }
+    .btn-eq  { background: #e6f4ea; color: #1e7e34; font-weight: 500; }
+    .btn-eq:hover { background: #ceead6; }
+    .btn-clr { background: #fde8e8; color: #b91c1c; }
+    .btn-clr:hover { background: #fbd0d0; }
+    .span2 { grid-column: span 2; text-align: left; padding-left: 22px; }
+  </style>
+</head>
+<body>
+<div class="calculator">
+  <div class="display">
+    <div id="expr"></div>
+    <div id="result">0</div>
+  </div>
+  <div class="buttons">
+    <button class="btn-clr span2" onclick="calc('C')">C</button>
+    <button onclick="calc('%')">%</button>
+    <button class="btn-op" onclick="calc('/')">÷</button>
+
+    <button onclick="calc('7')">7</button>
+    <button onclick="calc('8')">8</button>
+    <button onclick="calc('9')">9</button>
+    <button class="btn-op" onclick="calc('*')">×</button>
+
+    <button onclick="calc('4')">4</button>
+    <button onclick="calc('5')">5</button>
+    <button onclick="calc('6')">6</button>
+    <button class="btn-op" onclick="calc('-')">−</button>
+
+    <button onclick="calc('1')">1</button>
+    <button onclick="calc('2')">2</button>
+    <button onclick="calc('3')">3</button>
+    <button class="btn-op" onclick="calc('+')">+</button>
+
+    <button class="span2" onclick="calc('0')">0</button>
+    <button onclick="calc('.')">.</button>
+    <button class="btn-eq" onclick="calc('=')">=</button>
+  </div>
+</div>
+
+<script>
+  let expr = '';
+  let justEvaled = false;
+
+  function calc(val) {
+    const exprEl = document.getElementById('expr');
+    const resultEl = document.getElementById('result');
+    const ops = ['+', '-', '*', '/'];
+    const isOp = ops.includes(val);
+
+    if (val === 'C') {
+      expr = '';
+      exprEl.textContent = '';
+      resultEl.textContent = '0';
+      justEvaled = false;
+      return;
+    }
+
+    if (justEvaled && !isOp) { expr = ''; justEvaled = false; }
+    if (justEvaled && isOp)  { justEvaled = false; }
+
+    if (val === '%') {
+      try {
+        const v = parseFloat(expr);
+        if (!isNaN(v)) {
+          expr = String(v / 100);
+          resultEl.textContent = parseFloat(parseFloat(expr).toPrecision(10));
+          exprEl.textContent = expr;
+        }
+      } catch(e) {}
+      return;
+    }
+
+    if (val === '=') {
+      try {
+        let res = Function('"use strict"; return (' + expr + ')')();
+        res = parseFloat(res.toPrecision(10));
+        exprEl.textContent = expr.replace(/\*/g,'×').replace(/\//g,'÷') + ' =';
+        resultEl.textContent = res;
+        expr = String(res);
+        justEvaled = true;
+      } catch(e) {
+        resultEl.textContent = 'Error';
+        expr = '';
+      }
+      return;
+    }
+
+    if (isOp && expr === '') return;
+    if (isOp && ops.includes(expr.slice(-1))) expr = expr.slice(0, -1);
+
+    expr += val;
+    exprEl.textContent = expr.replace(/\*/g,'×').replace(/\//g,'÷');
+
+    try {
+      let res = Function('"use strict"; return (' + expr + ')')();
+      if (isFinite(res)) resultEl.textContent = parseFloat(res.toPrecision(10));
+    } catch(e) {}
+  }
+</script>
+</body>
+</html>
